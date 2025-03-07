@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "626249191554",
+    "project_id": "sugar-plus-340e2",
+    "storage_bucket": "sugar-plus-340e2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:626249191554:android:0b4fe8a45ba4b9499ca49b",
+        "android_client_info": {
+          "package_name": "com.example.diabetes_detection"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "626249191554-6jp13hi5n8h244ivqdrmantdf5k8v9jv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcQS1yJ0uY-d16xk7R57kqlgIJDsvjw7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "626249191554-6jp13hi5n8h244ivqdrmantdf5k8v9jv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "626249191554-errkcv8guoi3iedkdtc1c5lul1ha9t0f.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.diabetesDetection"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:626249191554:android:4abc8991542b8e5b9ca49b",
+        "android_client_info": {
+          "package_name": "com.example.diabetes_test"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "626249191554-6jp13hi5n8h244ivqdrmantdf5k8v9jv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcQS1yJ0uY-d16xk7R57kqlgIJDsvjw7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "626249191554-6jp13hi5n8h244ivqdrmantdf5k8v9jv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "626249191554-errkcv8guoi3iedkdtc1c5lul1ha9t0f.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.diabetesDetection"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
