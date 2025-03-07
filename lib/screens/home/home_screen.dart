@@ -1,15 +1,20 @@
-// lib/screens/home/home_screen.dart
-// ignore_for_file: deprecated_member_use
-
-import 'package:diabetes_test/providers/connectivity_provider.dart';
-import 'package:diabetes_test/providers/user_auth_provider.dart';
-import 'package:diabetes_test/screens/detection/diabetes_detection_screen.dart';
-import 'package:diabetes_test/services/database_service.dart';
+import 'package:diabetes_test/screens/home/widgets/action_card.dart';
+import 'package:diabetes_test/screens/home/widgets/article_card.dart';
+import 'package:diabetes_test/screens/home/widgets/health_metrics_card.dart';
+import 'package:diabetes_test/screens/home/widgets/history_card.dart';
+import 'package:diabetes_test/screens/home/widgets/profile_card.dart';
+import 'package:diabetes_test/screens/home/widgets/section_header.dart';
+import 'package:diabetes_test/screens/home/widgets/test_results_section.dart';
+import 'package:diabetes_test/screens/settings/setting_screen.dart';
 import 'package:diabetes_test/test_results_provider.dart';
-import 'package:diabetes_test/widgets/offline_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:diabetes_test/providers/user_auth_provider.dart';
+import 'package:diabetes_test/providers/connectivity_provider.dart';
+import 'package:diabetes_test/widgets/offline_banner.dart';
+import 'package:diabetes_test/screens/detection/diabetes_detection_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,6 +42,16 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _currentIndex = index);
   }
 
+  // Navigate to settings screen
+  void _navigateToSettings() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SettingsScreen(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Offline Banner
           Consumer<ConnectivityProvider>(
-            builder: (context, connectivityProvider, _) => OfflineBanner(),
+            builder: (context, connectivityProvider, _) => const OfflineBanner(),
           ),
           
           // Main content
@@ -54,146 +69,127 @@ class _HomeScreenState extends State<HomeScreen> {
               onPageChanged: (index) {
                 setState(() => _currentIndex = index);
               },
-              children: const [
-                _DashboardTab(),
-                _HistoryTab(),
-                _ProfileTab(),
+              children: [
+                _DashboardTab(onSettingsTap: _navigateToSettings),
+                const _HistoryTab(),
+                const _ProfileTab(),
               ],
             ),
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+      bottomNavigationBar: _buildBottomNavBar(),
+      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+  
+  Widget _buildBottomNavBar() {
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const DiabetesDetectionScreen(),
-                ),
-              ),
-              child: const Icon(Icons.camera_alt),
-            )
-          : null,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: _onTabTapped,
+          backgroundColor: Colors.white,
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Colors.grey.shade400,
+          elevation: 0,
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard_rounded),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_rounded),
+              label: 'History',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded),
+              label: 'Profile',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget? _buildFloatingActionButton() {
+    if (_currentIndex != 0) return null;
+    
+    return FloatingActionButton.extended(
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DiabetesDetectionScreen(),
+        ),
+      ),
+      label: const Text('Scan'),
+      icon: const Icon(Icons.camera_alt_rounded),
+      elevation: 4,
     );
   }
 }
 
 class _DashboardTab extends StatelessWidget {
-  const _DashboardTab();
+  final VoidCallback onSettingsTap;
+
+  const _DashboardTab({required this.onSettingsTap});
 
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserAuthProvider>(context);
-    final userName = userProvider.currentUser?.name ?? 'User';
-    
     return CustomScrollView(
       slivers: [
-        SliverAppBar(
-          expandedHeight: 200,
-          floating: false,
-          pinned: true,
-          flexibleSpace: FlexibleSpaceBar(
-            title: const Text('SugarPlus'),
-            background: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.asset(
-                  'assets/animations/plus.jpg',
-                  fit: BoxFit.cover,
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.7),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        _buildAppBar(context),
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Welcome, $userName',
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Track your health status and manage your diabetes detection results',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
+                // Health Status Card
+                const HealthMetricsCard(),
                 const SizedBox(height: 24),
                 
-                // Recent test section
-                _RecentTestSection(),
+                // Recent Test Results
+                SectionHeader(
+                  title: 'Recent Test Results',
+                  onSeeAll: () {},
+                ),
+                const SizedBox(height: 12),
+                const TestResultsSection(),
                 
                 const SizedBox(height: 24),
-                const Text(
-                  'Quick Actions',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
                 
-                // Feature cards
-                _buildFeatureCard(
-                  icon: Icons.camera_alt,
-                  title: 'New Eye Test',
-                  description: 'Detect diabetes through eye scanning',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const DiabetesDetectionScreen(),
-                    ),
-                  ),
+                // Quick Actions
+                SectionHeader(
+                  title: 'Quick Actions',
+                  onSeeAll: () {},
                 ),
-                _buildFeatureCard(
-                  icon: Icons.info,
-                  title: 'About Diabetes',
-                  description: 'Learn more about diabetes and prevention',
-                  onTap: () => Navigator.pushNamed(context, '/about'),
+                const SizedBox(height: 12),
+                _buildActionGrid(context),
+                
+                const SizedBox(height: 24),
+                
+                // Health Articles
+                SectionHeader(
+                  title: 'Health Articles',
+                  onSeeAll: () {},
                 ),
-                _buildFeatureCard(
-                  icon: Icons.health_and_safety,
-                  title: 'Health Tips',
-                  description: 'View personalized health recommendations',
-                  onTap: () => Navigator.pushNamed(context, '/health-tips'),
-                ),
+                const SizedBox(height: 12),
+                _buildArticlesList(context),
+                
+                const SizedBox(height: 80), // Bottom padding for FAB
               ],
             ),
           ),
@@ -201,222 +197,142 @@ class _DashboardTab extends StatelessWidget {
       ],
     );
   }
-
-  Widget _buildFeatureCard({
-    required IconData icon,
-    required String title,
-    required String description,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                child: Icon(icon, size: 24),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.arrow_forward_ios),
-            ],
+  
+  Widget _buildAppBar(BuildContext context) {
+    final userProvider = Provider.of<UserAuthProvider>(context);
+    final userName = userProvider.currentUser?.name ?? 'User';
+    final theme = Theme.of(context).colorScheme;
+    
+    return SliverAppBar(
+      expandedHeight: 180,
+      floating: false,
+      pinned: true,
+      backgroundColor: theme.primary,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        titlePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        title: const Text(
+          'SugarPlus',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _RecentTestSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<TestResultsProvider>(
-      builder: (context, provider, _) {
-        if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        
-        if (provider.error != null) {
-          return Card(
-            color: Colors.red.shade50,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red),
-                  const SizedBox(height: 8),
-                  Text(provider.error!),
-                  TextButton(
-                    onPressed: () => provider.setState(() => provider.update(
-                      Provider.of<UserAuthProvider>(context, listen: false).userId,
-                      Provider.of<DatabaseService>(context, listen: false),
-                    )),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        
-        if (provider.results.isEmpty) {
-          return Card(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  const Icon(Icons.medical_services_outlined, size: 48, color: Colors.blue),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No Test Results Yet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Take your first eye test to start monitoring your health',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const DiabetesDetectionScreen(),
-                      ),
-                    ),
-                    child: const Text('Take Eye Test'),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-        
-        // Show most recent test
-        final latestResult = provider.results.first;
-        
-        return Card(
-          elevation: 3,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Latest Test Result',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      DateFormat('MMM dd, yyyy').format(latestResult.timestamp),
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 32,
-                      backgroundColor: latestResult.isNormal
-                          ? Colors.green.withOpacity(0.2)
-                          : Colors.orange.withOpacity(0.2),
-                      child: Icon(
-                        latestResult.isNormal ? Icons.check_circle : Icons.warning,
-                        color: latestResult.isNormal ? Colors.green : Colors.orange,
-                        size: 40,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Sugar Level',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${latestResult.sugarLevel.toStringAsFixed(1)} mg/dL',
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          latestResult.isNormal
-                              ? 'Normal Range'
-                              : 'Elevated Range',
-                          style: TextStyle(
-                            color: latestResult.isNormal ? Colors.green : Colors.orange,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Divider(),
-                TextButton(
-                  onPressed: () => _onTabTapped(1),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('View All Test Results'),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward, size: 16),
-                    ],
-                  ),
-                ),
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                theme.primary,
+                theme.primary.withOpacity(0.8),
               ],
             ),
           ),
-        );
-      },
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 30),
+                  Text(
+                    'Hello, $userName',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Today is ${DateFormat('EEEE, MMMM d').format(DateTime.now())}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications_rounded, color: Colors.white),
+          onPressed: () {},
+        ),
+        IconButton(
+          icon: const Icon(Icons.settings_rounded, color: Colors.white),
+          onPressed: onSettingsTap, // Connect to settings screen
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionGrid(BuildContext context) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      mainAxisSpacing: 16,
+      crossAxisSpacing: 16,
+      childAspectRatio: 1.2,
+      children: [
+        ActionCard(
+          icon: Icons.camera_alt_rounded,
+          title: 'New Scan',
+          color: Colors.blue,
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const DiabetesDetectionScreen(),
+            ),
+          ),
+        ),
+        ActionCard(
+          icon: Icons.history_rounded,
+          title: 'View History',
+          color: Colors.purple,
+          onTap: () {},
+        ),
+        ActionCard(
+          icon: Icons.lightbulb_rounded,
+          title: 'Health Tips',
+          color: Colors.orange,
+          onTap: () {},
+        ),
+        ActionCard(
+          icon: Icons.settings_rounded,
+          title: 'Settings',
+          color: Colors.teal,
+          onTap: onSettingsTap, // Connect to settings screen
+        ),
+      ],
     );
   }
   
-  void _onTabTapped(int index) {
-    // Navigate to history tab
+  Widget _buildArticlesList(BuildContext context) {
+    return SizedBox(
+      height: 180,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          ArticleCard(
+            title: 'Managing Diabetes Naturally',
+            imageAsset: 'assets/images/healthy_food.jpeg',
+            onTap: () {},
+          ),
+          ArticleCard(
+            title: 'Benefits of Regular Exercise',
+            imageAsset: 'assets/images/exercise.jpeg',
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -427,102 +343,88 @@ class _HistoryTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        const SliverAppBar(
-          title: Text('Test History'),
+        SliverAppBar(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          title: const Text('Test History', style: TextStyle(color: Colors.white)),
           pinned: true,
+          floating: true,
         ),
-        Consumer<TestResultsProvider>(
-          builder: (context, provider, _) {
-            if (provider.isLoading) {
-              return const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-            
-            if (provider.error != null) {
-              return SliverFillRemaining(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                      const SizedBox(height: 16),
-                      Text(provider.error!),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () => provider.setState(() => provider.update(
-                          Provider.of<UserAuthProvider>(context, listen: false).userId,
-                          Provider.of<DatabaseService>(context, listen: false),
-                        )),
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-            
-            if (provider.results.isEmpty) {
-              return const SliverFillRemaining(
-                child: Center(
-                  child: Text('No test results found'),
-                ),
-              );
-            }
-            
-            return SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final result = provider.results[index];
-                  return _buildTestHistoryCard(context, result);
-                },
-                childCount: provider.results.length,
-              ),
-            );
-          },
-        ),
+        _buildHistoryList(),
       ],
     );
   }
 
-  Widget _buildTestHistoryCard(BuildContext context, TestResult result) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Sugar Level: ${result.sugarLevel.toStringAsFixed(1)} mg/dL',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                Icon(
-                  result.isNormal ? Icons.check_circle : Icons.warning,
-                  color: result.isNormal ? Colors.green : Colors.orange,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Test Date: ${DateFormat('MMM dd, yyyy HH:mm').format(result.timestamp)}',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              result.isNormal ? 'Normal Range' : 'Above Normal Range',
-              style: TextStyle(
-                color: result.isNormal ? Colors.green : Colors.orange,
-                fontWeight: FontWeight.bold,
+  Widget _buildHistoryList() {
+    return Consumer<TestResultsProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading) {
+          return const SliverFillRemaining(
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        
+        if (provider.error != null) {
+          return SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  const SizedBox(height: 16),
+                  Text(provider.error!),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => provider.setState(() {}),
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
+          );
+        }
+        
+        if (provider.results.isEmpty) {
+          return const SliverFillRemaining(
+            child: Center(
+              child: Text('No test results found'),
+            ),
+          );
+        }
+        
+        return SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              final result = provider.results[index];
+              
+              // Group by month
+              final bool showHeader = index == 0 || 
+                  result.timestamp.month != provider.results[index - 1].timestamp.month;
+              
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (showHeader)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 8),
+                      child: Text(
+                        DateFormat('MMMM yyyy').format(result.timestamp),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
+                  HistoryCard(
+                    result: result,
+                    onTap: () {},
+                  ),
+                ],
+              );
+            },
+            childCount: provider.results.length,
+          ),
+        );
+      },
     );
   }
 }
@@ -536,62 +438,89 @@ class _ProfileTab extends StatelessWidget {
       builder: (context, authProvider, _) {
         final user = authProvider.currentUser;
         
-        return ListView(
-          children: [
-            AppBar(
-              title: const Text('Profile'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.blue,
-                    child: Icon(Icons.person, size: 50, color: Colors.white),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    user?.name ?? 'User',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 32),
-                  _buildProfileTile(
-                    icon: Icons.email,
-                    title: 'Email',
-                    subtitle: user?.email ?? 'Not set',
-                  ),
-                  _buildProfileTile(
-                    icon: Icons.calendar_today,
-                    title: 'Member Since',
-                    subtitle: user?.createdAt != null 
-                        ? DateFormat('MMMM dd, yyyy').format(user!.createdAt) 
-                        : 'Unknown',
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      await authProvider.signOut();
-                      if (context.mounted) {
-                        Navigator.pushReplacementNamed(context, '/login');
-                      }
-                    },
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Sign Out'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.red,
+        return CustomScrollView(
+          slivers: [
+            _buildProfileAppBar(context),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Profile Avatar
+                    _buildProfileAvatar(context),
+                    const SizedBox(height: 16),
+                    Text(
+                      user?.name ?? 'User',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 32),
+                    
+                    // Account Info
+                    ProfileInfoCard(
+                      title: 'Account Information',
+                      items: [
+                        ProfileItem(
+                          icon: Icons.email_rounded,
+                          title: 'Email',
+                          value: user?.email ?? 'Not set',
+                        ),
+                        ProfileItem(
+                          icon: Icons.calendar_today_rounded,
+                          title: 'Member Since',
+                          value: user?.createdAt != null 
+                              ? DateFormat('MMMM dd, yyyy').format(user!.createdAt) 
+                              : 'Unknown',
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // App Settings
+                    ProfileInfoCard(
+                      title: 'App Settings',
+                      items: [
+                        ProfileItem(
+                          icon: Icons.notifications_rounded,
+                          title: 'Notifications',
+                          value: 'On',
+                          onTap: () {},
+                        ),
+                        ProfileItem(
+                          icon: Icons.nightlight_round,
+                          title: 'Dark Mode',
+                          value: 'System Default',
+                          onTap: () {},
+                        ),
+                        ProfileItem(
+                          icon: Icons.language_rounded,
+                          title: 'Language',
+                          value: 'English',
+                          onTap: () {},
+                        ),
+                        ProfileItem(
+                          icon: Icons.settings_rounded,
+                          title: 'All Settings',
+                          value: 'App preferences, security, and more',
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsScreen(),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Sign Out Button
+                    _buildSignOutButton(context, authProvider),
+                  ],
+                ),
               ),
             ),
           ],
@@ -600,15 +529,71 @@ class _ProfileTab extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      subtitle: Text(subtitle),
+  Widget _buildProfileAppBar(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 200,
+      pinned: true,
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      flexibleSpace: FlexibleSpaceBar(
+        title: const Text('Profile', style: TextStyle(color: Colors.white)),
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.primary.withOpacity(0.8),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.edit, color: Colors.white),
+          onPressed: () {},
+        ),
+        IconButton(
+          icon: const Icon(Icons.settings_rounded, color: Colors.white),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SettingsScreen(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildProfileAvatar(BuildContext context) {
+    return CircleAvatar(
+      radius: 50,
+      backgroundColor: Colors.grey.shade200,
+      child: Icon(
+        Icons.person,
+        size: 50,
+        color: Theme.of(context).colorScheme.primary,
+      ),
+    );
+  }
+  
+  Widget _buildSignOutButton(BuildContext context, UserAuthProvider authProvider) {
+    return ElevatedButton.icon(
+      onPressed: () async {
+        await authProvider.signOut();
+        if (context.mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      },
+      icon: const Icon(Icons.logout),
+      label: const Text('Sign Out'),
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.red,
+        minimumSize: const Size(double.infinity, 50),
+      ),
     );
   }
 }
