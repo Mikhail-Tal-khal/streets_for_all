@@ -6,9 +6,10 @@ import 'package:diabetes_test/screens/home/home_screen.dart';
 import 'package:diabetes_test/screens/splash/splash_screen.dart';
 import 'package:diabetes_test/screens/welcome/welcome_screen.dart';
 import 'package:flutter/material.dart';
-
+import 'package:diabetes_test/screens/doctor_consultation/doctor_consultation_screen.dart';
 
 class AppRoutes {
+  // Existing routes...
   static const String splash = '/splash';
   static const String welcome = '/welcome';
   static const String login = '/login';
@@ -16,9 +17,13 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
   static const String detection = '/detection';
+  
+  // New route for doctor consultation
+  static const String doctorConsultation = '/doctor-consultation';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      // Existing cases...
       case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
       case welcome:
@@ -35,6 +40,13 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => const DiabetesDetectionScreen(),
         );
+        
+      // New case for doctor consultation
+      case doctorConsultation:
+        return MaterialPageRoute(
+          builder: (_) => const DoctorConsultationScreen(),
+        );
+        
       default:
         return MaterialPageRoute(
           builder:

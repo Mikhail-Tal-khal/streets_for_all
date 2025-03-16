@@ -3,6 +3,7 @@
 import 'package:diabetes_test/firebase_options.dart';
 import 'package:diabetes_test/providers/connectivity_provider.dart';
 import 'package:diabetes_test/providers/health_tips_provider.dart';
+import 'package:diabetes_test/providers/streak_provider.dart';
 import 'package:diabetes_test/providers/theme_provider.dart';
 import 'package:diabetes_test/providers/user_auth_provider.dart';
 import 'package:diabetes_test/routes/app_routes.dart' show AppRoutes;
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserAuthProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
+        ChangeNotifierProvider(create: (_) => StreakProvider()),
 
         // Providers that depend on auth state - We use ProxyProvider to rebuild them when auth changes
         ChangeNotifierProxyProvider<UserAuthProvider, HealthTipsProvider>(

@@ -51,7 +51,7 @@ class ProfileItem extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.value,
-    this.onTap,
+    this.onTap, required MaterialColor valueColor,
   });
 
   @override
