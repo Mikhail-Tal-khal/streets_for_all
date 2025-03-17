@@ -2,6 +2,7 @@ import 'package:diabetes_test/screens/auth/forgot_password_screen.dart';
 import 'package:diabetes_test/screens/auth/login_screen.dart';
 import 'package:diabetes_test/screens/auth/signup_screen.dart';
 import 'package:diabetes_test/screens/detection/diabetes_detection_screen.dart';
+import 'package:diabetes_test/screens/home/history_screen.dart';
 import 'package:diabetes_test/screens/home/home_screen.dart';
 import 'package:diabetes_test/screens/splash/splash_screen.dart';
 import 'package:diabetes_test/screens/welcome/welcome_screen.dart';
@@ -17,8 +18,7 @@ class AppRoutes {
   static const String forgotPassword = '/forgot-password';
   static const String home = '/home';
   static const String detection = '/detection';
-  
-  // New route for doctor consultation
+  static const String history = '/history';
   static const String doctorConsultation = '/doctor-consultation';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -40,13 +40,13 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => const DiabetesDetectionScreen(),
         );
-        
-      // New case for doctor consultation
       case doctorConsultation:
         return MaterialPageRoute(
           builder: (_) => const DoctorConsultationScreen(),
         );
-        
+      case history:
+        return MaterialPageRoute(builder: (_) => const HistoryScreen());
+
       default:
         return MaterialPageRoute(
           builder:

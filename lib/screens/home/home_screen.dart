@@ -1,4 +1,4 @@
-import 'package:diabetes_test/screens/detection/diabetes_detection_screen.dart';
+import 'package:diabetes_test/routes/app_routes.dart';
 import 'package:diabetes_test/screens/home/widgets/navigation/custom_bottom_nav.dart';
 import 'package:diabetes_test/screens/profile/profile_screen.dart';
 import 'package:flutter/material.dart';
@@ -52,13 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
         unselectedColor: Colors.grey.shade400,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed:
-            () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const DiabetesDetectionScreen(),
-              ),
-            ),
+        onPressed: () => Navigator.pushNamed(context, AppRoutes.detection),
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: const Icon(Icons.camera_alt_rounded, color: Colors.white),
       ),
