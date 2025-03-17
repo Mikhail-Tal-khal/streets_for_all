@@ -1,3 +1,4 @@
+import 'package:diabetes_test/providers/user_auth_provider.dart';
 import 'package:flutter/material.dart';
 import '../models/health_tip.dart';
 
@@ -105,4 +106,10 @@ Tips for healthy eating:
   }
 
   updateAuthState(bool isAuthenticated) {}
+   void updateAuth(UserAuthProvider auth) {
+    // Your auth-dependent initialization
+    notifyListeners();
+  }
 }
+
+

@@ -38,7 +38,8 @@ class CustomBottomNavigation extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
           items: [
             _buildNavItem(Icons.home_rounded, 'Home'),
-            _buildCameraItem(),
+            _buildNavItem(Icons.history_rounded, 'History'),
+            _buildNavItem(Icons.medical_services_rounded, 'Doctor'),
             _buildNavItem(Icons.person_rounded, 'Profile'),
           ],
         ),
@@ -47,21 +48,9 @@ class CustomBottomNavigation extends StatelessWidget {
   }
 
   BottomNavigationBarItem _buildNavItem(IconData icon, String label) {
-    return BottomNavigationBarItem(icon: Icon(icon), label: label);
-  }
-
-  BottomNavigationBarItem _buildCameraItem() {
     return BottomNavigationBarItem(
-      icon: SizedBox(
-        width: 48,
-        height: 48,
-        child: Icon(
-          Icons.camera_alt_rounded,
-          size: 32,
-          color: currentIndex == 1 ? primaryColor : unselectedColor,
-        ),
-      ),
-      label: 'Scan',
+      icon: Icon(icon),
+      label: label,
     );
   }
 }
