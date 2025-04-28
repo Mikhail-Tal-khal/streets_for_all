@@ -33,6 +33,8 @@ class UserAuthProvider with ChangeNotifier {
     _auth.authStateChanges().listen((firebase_auth.User? firebaseUser) async {
       if (firebaseUser == null) {
         _currentUser = null;
+
+        // TODO: TAKE USER TO LOGIN SCREEN
       } else {
         await _fetchUserData(firebaseUser.uid);
       }

@@ -1,4 +1,3 @@
-
 // ignore_for_file: unrelated_type_equality_checks, avoid_print
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -20,12 +19,13 @@ class DatabaseService {
 
   Future<void> saveTestResult({
     required String userId,
-    required double sugarLevel,
-    required DateTime timestamp,
+    required double bloodSugar,
+    required int heartRate,
+    required DateTime timestamp, required double sugarLevel,
   }) async {
     final testData = {
-      'userId': userId,
-      'sugarLevel': sugarLevel,
+      'bloodSugar': bloodSugar,
+      'heartRate': heartRate,
       'timestamp': timestamp.toIso8601String(),
       'deviceInfo': await _getDeviceInfo(),
     };
@@ -34,117 +34,113 @@ class DatabaseService {
     final connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult == ConnectivityResult.none) {
       // Save locally if offline
-      await _saveTestResultLocally(testData);
+      await _saveTestResultLocally(userId, testData);
       return;
     }
     
     try {
-      // Try to save to Firestore
-      await _db.collection('test_results').add(testData);
+      // Save to user's subcollection
+      await _db.collection('users')
+        .doc(userId)
+        .collection('tests')
+        .add(testData);
       
-      // Also sync any pending offline data
-      await syncOfflineData();
+      // Sync any pending offline data
+      await syncOfflineData(userId);
     } catch (e) {
-      // Failed to save online, store locally
-      await _saveTestResultLocally(testData);
+      // Fallback to local storage
+      await _saveTestResultLocally(userId, testData);
       rethrow;
     }
   }
   
-  Future<void> _saveTestResultLocally(Map<String, dynamic> testData) async {
+  Future<void> _saveTestResultLocally(String userId, Map<String, dynamic> testData) async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      final extendedData = {
+        ...testData,
+        'userId': userId,  // Store userId for offline filtering
+      };
       
-      // Get existing offline data
-      final List<String> offlineData = prefs.getStringList(_offlineTestResultsKey) ?? [];
+      final List<String> offlineData = 
+        prefs.getStringList(_offlineTestResultsKey) ?? [];
+      offlineData.add(jsonEncode(extendedData));
       
-      // Add new test result
-      offlineData.add(jsonEncode(testData));
-      
-      // Save updated list
       await prefs.setStringList(_offlineTestResultsKey, offlineData);
     } catch (e) {
-      print('Error saving test result locally: $e');
+      print('Error saving locally: $e');
     }
   }
   
-  Future<void> syncOfflineData() async {
-    // Check connectivity first
+  Future<void> syncOfflineData(String userId) async {
     final connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      return; // Still offline, can't sync
-    }
-    
+    if (connectivityResult == ConnectivityResult.none) return;
+
     try {
       final prefs = await SharedPreferences.getInstance();
-      final List<String> offlineData = prefs.getStringList(_offlineTestResultsKey) ?? [];
+      final List<String> offlineData = 
+        prefs.getStringList(_offlineTestResultsKey) ?? [];
       
-      if (offlineData.isEmpty) return; // No data to sync
-      
-      // Batch write to Firestore
+      if (offlineData.isEmpty) return;
+
       final batch = _db.batch();
-      
+      final newOfflineData = <String>[];
+
       for (final dataString in offlineData) {
         final data = jsonDecode(dataString) as Map<String, dynamic>;
-        final docRef = _db.collection('test_results').doc();
-        batch.set(docRef, data);
+        
+        if (data['userId'] == userId) {
+          final docRef = _db.collection('users')
+            .doc(userId)
+            .collection('tests')
+            .doc();
+          batch.set(docRef, data);
+        } else {
+          // Keep data for other users
+          newOfflineData.add(dataString);
+        }
       }
       
-      // Commit the batch
       await batch.commit();
-      
-      // Clear synced data
-      await prefs.setStringList(_offlineTestResultsKey, []);
+      await prefs.setStringList(_offlineTestResultsKey, newOfflineData);
       
     } catch (e) {
-      print('Error syncing offline data: $e');
-      // Keep the offline data for next sync attempt
+      print('Sync error: $e');
     }
   }
 
   Stream<QuerySnapshot> getTestResults(String userId) {
-    return _db
-        .collection('test_results')
-        .where('userId', isEqualTo: userId)
-        .orderBy('timestamp', descending: true)
-        .snapshots();
+    return _db.collection('users')
+      .doc(userId)
+      .collection('tests')
+      .orderBy('timestamp', descending: true)
+      .snapshots();
   }
   
   Future<List<Map<String, dynamic>>> getTestResultsOffline(String userId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final List<String> offlineData = prefs.getStringList(_offlineTestResultsKey) ?? [];
-      
-      // Parse and filter by userId
-      final userResults = offlineData
-          .map((dataString) => jsonDecode(dataString) as Map<String, dynamic>)
-          .where((data) => data['userId'] == userId)
-          .toList();
-          
-      // Sort by timestamp (descending)
-      userResults.sort((a, b) {
-        final DateTime dateA = DateTime.parse(a['timestamp']);
-        final DateTime dateB = DateTime.parse(b['timestamp']);
-        return dateB.compareTo(dateA);
-      });
-      
-      return userResults;
+      return prefs.getStringList(_offlineTestResultsKey)?.map((dataString) {
+        final data = jsonDecode(dataString) as Map<String, dynamic>;
+        return {
+          'bloodSugar': data['bloodSugar']?.toDouble(),
+          'heartRate': data['heartRate']?.toInt(),
+          'timestamp': data['timestamp'],
+        };
+      }).where((data) => data['userId'] == userId).toList() ?? [];
     } catch (e) {
-      print('Error getting offline test results: $e');
+      print('Offline read error: $e');
       return [];
     }
   }
-  
+
   Future<Map<String, String>> _getDeviceInfo() async {
-    // In a real app, you'd use device_info_plus package
-    // This is a simplified version
     return {
       'platform': 'mobile',
       'appVersion': '1.0.0',
     };
   }
   
-  // Helper to check if we're online
   Future<bool> isOnline() async {
     final connectivityResult = await Connectivity().checkConnectivity();
     return connectivityResult != ConnectivityResult.none;

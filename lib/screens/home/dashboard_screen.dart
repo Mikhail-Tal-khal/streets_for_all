@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:diabetes_test/providers/streak_provider.dart';
 
+
 class DashboardScreen extends StatelessWidget {
   final VoidCallback onSettingsTap;
 
@@ -97,6 +98,7 @@ class TestResultsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return Consumer<TestResultsProvider>(
       builder: (context, provider, _) {
         if (provider.results.isEmpty) return const SizedBox.shrink();

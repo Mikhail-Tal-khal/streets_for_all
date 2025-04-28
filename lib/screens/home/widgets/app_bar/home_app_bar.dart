@@ -27,14 +27,6 @@ class HomeAppBar extends StatelessWidget {
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.pin,
         titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-        title: const Text(
-          'MyDiabetes',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -54,7 +46,7 @@ class HomeAppBar extends StatelessWidget {
                 children: [
                   const Spacer(),
                   Text(
-                    'Greetings, ${user?.name ?? 'User'}',
+                    'Hello, ${user?.name ?? 'User'}',
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -63,7 +55,7 @@ class HomeAppBar extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Have a restful night',
+                    'Have a healthy day!',
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.white.withOpacity(0.9),

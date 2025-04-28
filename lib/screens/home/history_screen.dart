@@ -1,8 +1,12 @@
+// ignore_for_file: unused_element
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:diabetes_test/models/history_item.dart';
-import 'package:diabetes_test/providers/test_results_provider.dart';
 import 'package:intl/intl.dart';
+
+import '../../test_results_provider.dart';
+import 'widgets/history_card.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -47,7 +51,7 @@ class HistoryScreen extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final result = provider.results[index];
-              return _HistoryCard(item: result);
+              return HistoryCard(result: result);
             },
           );
         },
